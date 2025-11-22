@@ -1,9 +1,28 @@
-import { clientPromise } from "@/lib/db";
+"use server";
+import connectDB from "@/lib/mongoose";
 import { TaskModel } from "@/models/task-model";
+
+export async function getTasksFromDB() {
+    try {
+        await connectDB();
+        // Sort by createdAt descending (newest first)
+        const tasks = await TaskModel.find({}).sort({ createdAt: -1 });
+        
+        return tasks.map((task: any) => ({
+            ...task.toObject(),
+            id: task._id.toString(),
+            _id: task._id.toString(),
+            dueDate: task.dueDate ? new Date(task.dueDate).toISOString() : undefined
+        }));
+    } catch (error) {
+        console.error("Fetch Error:", error);
+        return [];
+    }
+}
 
 export async function createTaskInDB(taskData: { title: any; description: any; dueDate: any; tags: any; }) {
     try {
-        await clientPromise;
+        await connectDB();
 
         const newTask = new TaskModel({
             title: taskData.title,
@@ -20,13 +39,14 @@ export async function createTaskInDB(taskData: { title: any; description: any; d
         return JSON.parse(JSON.stringify(savedTask));
     } catch (error) {
         console.error("Database Error:", error);
+        throw error;
     }
 }
 
 
 export async function updateTaskStatusInDB(taskId: string, newStatus: string) {
     try {
-        await clientPromise;
+        await connectDB();
 
         const updatedTask = await TaskModel.findByIdAndUpdate(
             taskId,
@@ -41,9 +61,9 @@ export async function updateTaskStatusInDB(taskId: string, newStatus: string) {
 }
 
 
-export async function updateTaskDetailsInDB(task: { id: string; title: string; description: string; dueDate: string; tags: string; }) {
+export async function updateTaskDetailsInDB(task: { id: string; title: string; description: string; dueDate?: string; tags: string[]; imageUrl?: string; }) {
     try {
-        await clientPromise;
+        await connectDB();
 
         const updatedTask = await TaskModel.findByIdAndUpdate(
             task.id,
@@ -51,7 +71,8 @@ export async function updateTaskDetailsInDB(task: { id: string; title: string; d
                 title: task.title,
                 description: task.description,
                 dueDate: task.dueDate,
-                tags: task.tags
+                tags: task.tags,
+                imageUrl: task.imageUrl
             },
             { new: true }
         );
@@ -65,7 +86,7 @@ export async function updateTaskDetailsInDB(task: { id: string; title: string; d
 
 export async function deleteTaskFromDB(taskId: string) {
     try {
-        await clientPromise;
+        await connectDB();
 
         await TaskModel.findByIdAndDelete(taskId);
 

@@ -80,20 +80,25 @@ const Globe: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'data' | 'chat'>('data');
 
     // Credit System
-    const [credits, setCredits] = useState(() => {
-        const saved = localStorage.getItem('nexus_credits');
-        const savedDate = localStorage.getItem('nexus_credits_date');
-        const now = new Date();
-        const currentMonth = `${now.getFullYear()}-${now.getMonth()}`;
+    const [credits, setCredits] = useState(50);
 
-        // Reset credits if new month or no record
-        if (!savedDate || savedDate !== currentMonth) {
-            localStorage.setItem('nexus_credits_date', currentMonth);
-            localStorage.setItem('nexus_credits', '50');
-            return 50;
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem('nexus_credits');
+            const savedDate = localStorage.getItem('nexus_credits_date');
+            const now = new Date();
+            const currentMonth = `${now.getFullYear()}-${now.getMonth()}`;
+
+            // Reset credits if new month or no record
+            if (!savedDate || savedDate !== currentMonth) {
+                localStorage.setItem('nexus_credits_date', currentMonth);
+                localStorage.setItem('nexus_credits', '50');
+                setCredits(50);
+            } else {
+                setCredits(saved ? parseInt(saved) : 50);
+            }
         }
-        return saved ? parseInt(saved) : 50;
-    });
+    }, []);
 
     useEffect(() => {
         localStorage.setItem('nexus_credits', credits.toString());
