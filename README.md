@@ -1,36 +1,100 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Klaytic - Advanced Productivity Suite
 
-## Getting Started
+![Klaytic Banner](public/banner.png)
 
-First, run the development server:
+**Klaytic** is a futuristic, AI-powered productivity dashboard designed to streamline your workflow with cutting-edge tools and a stunning, immersive interface. Built with the latest web technologies, it combines task management, global intelligence, and secure asset storage into a single, cohesive platform.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🚀 Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 🌍 Global Intelligence (The Globe)
+*   **AI-Powered Analysis**: Real-time analysis of global trends and regional situations using Google Gemini AI.
+*   **Interactive 3D Map**: A beautiful, interactive geometric world map for region selection.
+*   **Visualizations**: Dynamic widget generation and AI-generated context images.
+*   **Credit System**: Usage-based credit system with database persistence.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 📋 Task Command (Task Board)
+*   **Kanban Workflow**: Drag-and-drop task management (Todo, In Progress, Done).
+*   **User Isolation**: Private task boards for each user.
+*   **Smart Features**: AI-generated tags and priority sorting.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 🗄️ Asset Vault
+*   **Secure Storage**: File uploading powered by **UploadThing**.
+*   **File Management**: Upload, preview, download, and delete files.
+*   **Metadata Tracking**: Automatic tracking of file types, sizes, and upload dates in MongoDB.
 
-## Learn More
+### 👤 User Profile
+*   **Identity Management**: Customizable user profiles (Bio, Role, Social Links).
+*   **Database Persistence**: Direct synchronization with MongoDB.
+*   **Holographic UI**: A visually striking, sci-fi inspired profile interface.
 
-To learn more about Next.js, take a look at the following resources:
+### 🔐 Authentication & Security
+*   **Better Auth**: Robust authentication system supporting Google OAuth and Email/Password.
+*   **Session Management**: Secure session handling and protected API routes.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🛠️ Tech Stack
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+*   **Framework**: [Next.js 15](https://nextjs.org/) (App Router)
+*   **Language**: [TypeScript](https://www.typescriptlang.org/)
+*   **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
+*   **Database**: [MongoDB](https://www.mongodb.com/) (with Mongoose)
+*   **Authentication**: [Better Auth](https://better-auth.com/)
+*   **File Storage**: [UploadThing](https://uploadthing.com/)
+*   **AI Model**: [Google Gemini](https://deepmind.google/technologies/gemini/)
 
-## Deploy on Vercel
+## 📦 Getting Started
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Prerequisites
+*   Node.js 18+
+*   MongoDB Database
+*   UploadThing Account
+*   Google Cloud Console Project (for OAuth & Gemini)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Installation
+
+1.  **Clone the repository**
+    ```bash
+    git clone https://github.com/realaashishly/Klaytic-Productivity.git
+    cd klaytic
+    ```
+
+2.  **Install dependencies**
+    ```bash
+    npm install
+    ```
+
+3.  **Environment Setup**
+    Create a `.env` file in the root directory and add the following variables:
+
+    ```env
+    # Database
+    MONGODB_URI=your_mongodb_connection_string
+    MONGODB_DB_NAME=klaytic_db
+
+    # Authentication (Better Auth)
+    BETTER_AUTH_SECRET=your_random_secret
+    BETTER_AUTH_URL=http://localhost:3000
+    GOOGLE_CLIENT_ID=your_google_client_id
+    GOOGLE_CLIENT_SECRET=your_google_client_secret
+
+    # File Uploads (UploadThing)
+    UPLOADTHING_SECRET=your_uploadthing_secret
+    UPLOADTHING_APP_ID=your_uploadthing_app_id
+
+    # AI (Google Gemini)
+    GEMINI_API_KEY=your_gemini_api_key
+    ```
+
+4.  **Run the development server**
+    ```bash
+    npm run dev
+    ```
+
+    Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📄 License
+
+This project is licensed under the MIT License.
