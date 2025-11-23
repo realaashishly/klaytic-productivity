@@ -1,3 +1,4 @@
+'use client'
 import React, { useEffect, useState } from 'react';
 import { Task, TaskStatus } from '../types';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
@@ -230,7 +231,7 @@ const Dashboard: React.FC = () => {
           { label: 'Pending', value: todo, icon: AlertCircle, color: 'text-red-500' },
         ].map((stat, idx) => (
           <div key={idx} className="bg-neutral-900/50 backdrop-blur-md border border-white/15 p-8 relative group hover:border-white/30 transition-all duration-300 shadow-lg">
-            <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div className="absolute top-0 left-0 w-full h-px bg-linear-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
             <div className="flex items-start justify-between mb-6">
               <stat.icon size={24} className={`${stat.color} opacity-90`} strokeWidth={1.5} />
               <span className="text-xs font-mono text-neutral-600 uppercase">stat_{idx}</span>
@@ -293,7 +294,7 @@ const Dashboard: React.FC = () => {
         {/* AI Companion Widget - K */}
         <div className="bg-neutral-900/50 backdrop-blur-md border border-white/15 p-10 flex flex-col justify-center relative overflow-hidden group hover:border-cyan-500/30 transition-colors shadow-lg">
 
-          <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(6,182,212,0.03)_25%,rgba(6,182,212,0.03)_50%,transparent_50%,transparent_75%,rgba(6,182,212,0.03)_75%,rgba(6,182,212,0.03)_100%)] bg-[size:20px_20px] opacity-20 pointer-events-none"></div>
+          <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(6,182,212,0.03)_25%,rgba(6,182,212,0.03)_50%,transparent_50%,transparent_75%,rgba(6,182,212,0.03)_75%,rgba(6,182,212,0.03)_100%)] bg-size-[20px_20px] opacity-20 pointer-events-none"></div>
 
           <div className="flex items-start gap-8 relative z-10">
             <div className={`w-28 h-28 border border-white/10 flex items-center justify-center shrink-0 bg-black relative shadow-2xl`}>

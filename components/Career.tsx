@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { GraduationCap, Loader2, Send, User, Bot, Sparkles, TrendingUp, DollarSign, ChevronRight, History, Plus, MessageSquare } from 'lucide-react';
 import { careerCounselorChat } from '../services/geminiService';
 import { CareerChatMessage } from '../types';
+import { getCareerSessions, createCareerSession, addMessageToSession, updateSessionTitle } from '@/actions/careerActions';
 
 interface CareerSession {
   id: string;
@@ -15,54 +16,38 @@ const Career: React.FC = () => {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Sessions Management
   const [sessions, setSessions] = useState<CareerSession[]>([]);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('nexus_career_sessions');
-      if (saved) {
-        setSessions(JSON.parse(saved));
-      }
-    }
-  }, []);
-
-  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [currentSessionId, setCurrentSessionId] = useState<string>("");
   const [currentMessages, setCurrentMessages] = useState<CareerChatMessage[]>([]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Initialize default session if none exists
+  // Fetch sessions on mount
   useEffect(() => {
-    if (sessions.length === 0 && !currentSessionId) {
-      startNewSession();
-    } else if (!currentSessionId && sessions.length > 0) {
-      // Load most recent
-      loadSession(sessions[0].id);
-    }
+    const fetchSessions = async () => {
+      const fetchedSessions = await getCareerSessions();
+      // @ts-ignore
+      setSessions(fetchedSessions);
+
+      if (fetchedSessions.length > 0) {
+        // Load most recent
+        setCurrentSessionId(fetchedSessions[0].id);
+        setCurrentMessages(fetchedSessions[0].messages);
+      } else {
+        startNewSession();
+      }
+    };
+    fetchSessions();
   }, []);
 
-  // Save to Local Storage whenever sessions change
-  useEffect(() => {
-    localStorage.setItem('nexus_career_sessions', JSON.stringify(sessions));
-  }, [sessions]);
-
-  const startNewSession = () => {
-    const newId = Math.random().toString(36).substr(2, 9);
-    const newSession: CareerSession = {
-      id: newId,
-      date: new Date(),
-      title: 'New Career Analysis',
-      messages: [{
-        id: 'init',
-        role: 'ai',
-        content: "Career Advisor online. How can I assist your professional growth today?",
-        type: 'text'
-      }]
-    };
-    setSessions(prev => [newSession, ...prev]);
-    setCurrentSessionId(newId);
-    setCurrentMessages(newSession.messages);
+  const startNewSession = async () => {
+    const newSession = await createCareerSession();
+    if (newSession) {
+      // @ts-ignore
+      setSessions(prev => [newSession, ...prev]);
+      setCurrentSessionId(newSession.id);
+      setCurrentMessages(newSession.messages);
+    }
   };
 
   const loadSession = (id: string) => {
@@ -73,27 +58,9 @@ const Career: React.FC = () => {
     }
   };
 
-  const updateCurrentSession = (newMsgs: CareerChatMessage[]) => {
-    setCurrentMessages(newMsgs);
-    setSessions(prev => prev.map(s => {
-      if (s.id === currentSessionId) {
-        // Update title based on first user message if generic
-        let title = s.title;
-        if (title === 'New Career Analysis' && newMsgs.length > 1) {
-          const userMsg = newMsgs.find(m => m.role === 'user');
-          if (userMsg) title = userMsg.content.substring(0, 25) + "...";
-        }
-        return { ...s, messages: newMsgs, title };
-      }
-      return s;
-    }));
-  };
-
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
-
-  useEffect(scrollToBottom, [currentMessages]);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -105,14 +72,47 @@ const Career: React.FC = () => {
       type: 'text'
     };
 
+    // Optimistic update
     const updatedMessages = [...currentMessages, userMsg];
-    updateCurrentSession(updatedMessages);
+    setCurrentMessages(updatedMessages);
     setInput('');
     setLoading(true);
 
+    let activeSessionId = currentSessionId;
+
+    if (!activeSessionId) {
+      const newSession = await createCareerSession();
+      if (newSession) {
+        activeSessionId = newSession.id;
+        setCurrentSessionId(activeSessionId);
+        // @ts-ignore
+        setSessions(prev => [newSession, ...prev]);
+      }
+    }
+
+    // Save user message
+    if (activeSessionId) {
+      await addMessageToSession(activeSessionId, userMsg);
+
+      // Update title if it's the first user message
+      const currentSession = sessions.find(s => s.id === activeSessionId);
+      if (currentSession && currentSession.title === 'New Career Analysis' && updatedMessages.length > 1) {
+        const newTitle = userMsg.content.substring(0, 25) + "...";
+        await updateSessionTitle(activeSessionId, newTitle);
+        setSessions(prev => prev.map(s => s.id === activeSessionId ? { ...s, title: newTitle } : s));
+      }
+    }
+
     try {
       const response = await careerCounselorChat(updatedMessages, userMsg.content);
-      updateCurrentSession([...updatedMessages, response]);
+      const finalMessages = [...updatedMessages, response];
+      setCurrentMessages(finalMessages);
+
+      if (activeSessionId) {
+        await addMessageToSession(activeSessionId, response);
+        // Update local session state
+        setSessions(prev => prev.map(s => s.id === activeSessionId ? { ...s, messages: finalMessages } : s));
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -181,8 +181,8 @@ const Career: React.FC = () => {
 
                   {msg.content && (
                     <div className={`p-5 text-sm border rounded-2xl ${msg.role === 'user'
-                        ? 'bg-white/10 border-white/20 text-white rounded-br-sm'
-                        : 'bg-black border-cyan-900/30 text-cyan-100 rounded-bl-sm'
+                      ? 'bg-white/10 border-white/20 text-white rounded-br-sm'
+                      : 'bg-black border-cyan-900/30 text-cyan-100 rounded-bl-sm'
                       }`}>
                       <span className="text-[9px] font-bold opacity-50 block mb-2 uppercase tracking-wider">{msg.role === 'user' ? 'YOU' : 'AI ADVISOR'}</span>
                       <p className="leading-relaxed whitespace-pre-wrap">{msg.content}</p>

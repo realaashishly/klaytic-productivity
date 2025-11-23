@@ -23,11 +23,11 @@ export default function RootLayout({
       <body className="antialiased">
         <TasksProvider>
           <div className="flex min-h-screen bg-[#030303] text-neutral-300 font-sans selection:bg-cyan-500/20 selection:text-cyan-200 relative overflow-hidden">
-            <AtmosphericBackground />
+            {/* <AtmosphericBackground /> */}
 
-            <Sidebar />
+            {/* <Sidebar /> */}
 
-            <Companion />
+            {/* <Companion /> */}
 
             <main className="flex-1 overflow-y-auto h-screen relative scroll-smooth z-10">
               {children}

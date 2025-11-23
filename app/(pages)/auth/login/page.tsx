@@ -2,28 +2,62 @@
 import React, { useState, useEffect } from 'react';
 import { Mail, Lock, ArrowRight, Eye, EyeOff, ShieldCheck, Activity, Cpu } from 'lucide-react';
 import Link from 'next/link';
+import { authClient } from '@/lib/better-auth/auth-client';
+import { redirect } from 'next/navigation';
 
 export default function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [mounted, setMounted] = useState(false);
+    const [UserLogin, setUserLogin] = useState({
+        email: "",
+        password: "",
+    });
 
     useEffect(() => {
         setMounted(true);
     }, []);
 
-    const handleLogin = (e: { preventDefault: () => void; }) => {
+    const handleLogin = async (e: { preventDefault: () => void; }) => {
         e.preventDefault();
-        setIsLoading(true);
-        // Simulate network request
-        setTimeout(() => setIsLoading(false), 2000);
-    };
 
-    const handleGoogleLogin = () => {
         setIsLoading(true);
-        // Simulate Google auth
-        setTimeout(() => setIsLoading(false), 2000);
-    };
+        setTimeout(() => setIsLoading(false), 2500);
+
+
+        const { data, error } = await authClient.signIn.email({
+            email: UserLogin.email,
+            password: UserLogin.password,
+            callbackURL: "/",
+        }, {
+            onRequest: (ctx) => {
+
+            },
+            onSuccess: (ctx) => {
+
+                redirect("/");
+            },
+            onError: (ctx) => {
+
+                alert(ctx.error.message);
+            },
+        });
+
+        return { data, error };
+    }
+
+    const handleGoogleLogin = async () => {
+        setIsLoading(true);
+
+        const data = await authClient.signIn.social({
+            provider: "google",
+            callbackURL: "/",
+            errorCallbackURL: "/error",
+            //    newUserCallbackURL: "/welcome",
+        });
+
+        setIsLoading(false);
+    }
 
     return (
         <div className="min-h-screen w-full flex items-center justify-center bg-neutral-950 relative overflow-hidden font-sans text-neutral-200 selection:bg-cyan-500/30">
@@ -42,7 +76,7 @@ export default function LoginPage() {
       `}</style>
 
             {/* Ambient Background - Grid Pattern from Dashboard */}
-            <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(6,182,212,0.03)_25%,rgba(6,182,212,0.03)_50%,transparent_50%,transparent_75%,rgba(6,182,212,0.03)_75%,rgba(6,182,212,0.03)_100%)] bg-[size:20px_20px] opacity-20 pointer-events-none"></div>
+            <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(6,182,212,0.03)_25%,rgba(6,182,212,0.03)_50%,transparent_50%,transparent_75%,rgba(6,182,212,0.03)_75%,rgba(6,182,212,0.03)_100%)] bg-size-[20px_20px] opacity-20 pointer-events-none"></div>
 
             {/* Background Glows */}
             <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-cyan-900/20 rounded-full blur-[128px] pointer-events-none" />
@@ -65,7 +99,7 @@ export default function LoginPage() {
 
                     {/* Decorative accents */}
                     <div className="absolute top-0 right-0 w-20 h-20 bg-cyan-500/10 blur-2xl pointer-events-none"></div>
-                    <div className="absolute left-0 top-10 w-0.5 h-20 bg-gradient-to-b from-transparent via-cyan-500/50 to-transparent"></div>
+                    <div className="absolute left-0 top-10 w-0.5 h-20 bg-linear-to-b from-transparent via-cyan-500/50 to-transparent"></div>
 
                     <div className="p-8 md:p-10 bg-black/20 relative z-10">
                         {/* Header */}
@@ -73,7 +107,7 @@ export default function LoginPage() {
                             <h1 className="text-4xl font-bold text-white mb-2 tracking-tighter font-outfit uppercase flex items-center gap-3">
                                 Identity <span className="text-cyan-500">.Logs</span>
                             </h1>
-                            <div className="h-px w-full bg-gradient-to-r from-cyan-500/50 to-transparent mb-4"></div>
+                            <div className="h-px w-full bg-linear-to-r from-cyan-500/50 to-transparent mb-4"></div>
                             <p className="text-neutral-400 text-xs font-mono uppercase tracking-widest flex items-center gap-2">
                                 <ShieldCheck size={14} className="text-cyan-500" />
                                 Required Authentication Level: 4
@@ -91,6 +125,8 @@ export default function LoginPage() {
                                     <input
                                         type="email"
                                         required
+                                        value={UserLogin.email}
+                                        onChange={(e) => setUserLogin({ ...UserLogin, email: e.target.value })}
                                         placeholder="OPERATOR@KLAYTIC.SYS"
                                         className="w-full bg-black/40 border border-white/10 rounded-none py-4 pl-12 pr-4 text-white placeholder:text-neutral-700 font-mono text-sm focus:outline-none focus:border-cyan-500/50 focus:bg-cyan-950/10 transition-all duration-300 hover:border-white/20"
                                     />
@@ -112,6 +148,8 @@ export default function LoginPage() {
                                     <input
                                         type={showPassword ? "text" : "password"}
                                         required
+                                        value={UserLogin.password}
+                                        onChange={(e) => setUserLogin({ ...UserLogin, password: e.target.value })}
                                         placeholder="••••••••••••"
                                         className="w-full bg-black/40 border border-white/10 rounded-none py-4 pl-12 pr-12 text-white placeholder:text-neutral-700 font-mono text-sm focus:outline-none focus:border-cyan-500/50 focus:bg-cyan-950/10 transition-all duration-300 hover:border-white/20"
                                     />
@@ -144,7 +182,7 @@ export default function LoginPage() {
                                 <ArrowRight className={`h-4 w-4 relative z-10 transition-transform duration-300 ${isLoading ? 'translate-x-10 opacity-0' : 'group-hover:translate-x-1'}`} />
 
                                 {/* Button scanline effect */}
-                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-500/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                                <div className="absolute inset-0 bg-linear-to-r from-transparent via-cyan-500/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
                             </button>
 
                             {/* Alternate Auth Divider */}
@@ -177,10 +215,10 @@ export default function LoginPage() {
                             </button>
 
                             {/* Forgot Password Link */}
-                            <div className="text-center mt-6 flex w-full justify-between">
-                                <Link href="#" className="text-[10px] text-neutral-500 hover:text-cyan-500 font-mono uppercase tracking-widest border-b border-transparent hover:border-cyan-500/50 pb-0.5 transition-all">
+                            <div className="text-center mt-6 flex w-full justify-center items-center ">
+                                {/* <Link href="#" className="text-[10px] text-neutral-500 hover:text-cyan-500 font-mono uppercase tracking-widest border-b border-transparent hover:border-cyan-500/50 pb-0.5 transition-all">
                                     Reset Security Credentials
-                                </Link>
+                                </Link> */}
                                 <Link href={'/auth/signup'} className="text-[10px] text-neutral-500 hover:text-cyan-500 font-mono uppercase tracking-widest border-b border-transparent hover:border-cyan-500/50 pb-0.5 transition-all">Existing Operator? Access Gate</Link>
                             </div>
 

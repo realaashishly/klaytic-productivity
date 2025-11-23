@@ -27,7 +27,7 @@ export interface Task {
   dueDate?: string; // ISO Date string (YYYY-MM-DDTHH:mm)
   priority: number; // Higher number = higher priority
   aiGenerated?: boolean;
-  imageUrl?: string; 
+  imageUrl?: string;
   analysis?: TaskAnalysis;
 }
 
@@ -59,7 +59,7 @@ export interface MiniApp {
   id: string;
   title: string;
   description: string;
-  icon: string; 
+  icon: string;
   systemInstruction: string;
   createdAt: Date;
   chatHistory: MiniAppChat[];
@@ -94,17 +94,15 @@ export interface LinkResource {
 export interface UserProfile {
   name: string;
   role: string;
-  email: string;
+  email?: string;
   bio: string;
   age: string;     // New Field
   country: string; // New Field
   avatarUrl?: string;
-  socials: {
-    twitter?: string;
-    linkedin?: string;
-    github?: string;
-    website?: string;
-  };
+  twitter?: string;
+  linkedin?: string;
+  github?: string;
+  website?: string;
 }
 
 // --- NEW FEATURES ---
@@ -150,26 +148,26 @@ export interface SavedQuery {
 export type GlobalWidgetType = 'stat' | 'list' | 'tags' | 'text' | 'insight';
 
 export interface GlobalWidgetContent {
-    value?: string;      // For stats
-    trend?: string;      // For stats (e.g., "+5%")
-    label?: string;      // For stats (e.g., "Annual Growth")
-    items?: string[];    // For lists and tags
-    text?: string;       // For text blocks
+  value?: string;      // For stats
+  trend?: string;      // For stats (e.g., "+5%")
+  label?: string;      // For stats (e.g., "Annual Growth")
+  items?: string[];    // For lists and tags
+  text?: string;       // For text blocks
 }
 
 export interface GlobalWidget {
-    id: string;
-    type: GlobalWidgetType;
-    title: string;
-    icon: string;        // Lucide icon name string
-    content: GlobalWidgetContent;
-    width: 'full' | 'half';
+  id: string;
+  type: GlobalWidgetType;
+  title: string;
+  icon: string;        // Lucide icon name string
+  content: GlobalWidgetContent;
+  width: 'full' | 'half';
 }
 
 export interface GlobalAnalysisResult {
-    summary: string; // High-level AI summary
-    relevantContinents: string[]; // For map highlighting
-    widgets: GlobalWidget[]; // Dynamic UI components
+  summary: string; // High-level AI summary
+  relevantContinents: string[]; // For map highlighting
+  widgets: GlobalWidget[]; // Dynamic UI components
 }
 
 export interface TrendDeepDive {
@@ -178,7 +176,7 @@ export interface TrendDeepDive {
 }
 
 export interface GlobalChatMessage {
-    id: string;
-    role: 'user' | 'ai';
-    content: string;
+  id: string;
+  role: 'user' | 'ai';
+  content: string;
 }

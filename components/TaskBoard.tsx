@@ -11,9 +11,7 @@ import {
   deleteTaskFromDB,
   updateTaskDetailsInDB,
   updateTaskStatusInDB,
-  getTasksFromDB,
 } from "@/actions/taskActions";
-import { useEffect } from "react";
 
 const EMPTY_NEW_TASK = {
   title: "",
@@ -27,6 +25,7 @@ const TaskBoard: React.FC = () => {
   const { tasks, setTasks } = useTasks();
   const [showModal, setShowModal] = useState(false);
   const [newTask, setNewTask] = useState(EMPTY_NEW_TASK);
+  const [loadingTask, setLoadingTask] = useState(false);
   const [dragOverColumnId, setDragOverColumnId] =
     useState<TaskStatus | null>(null);
 
@@ -127,6 +126,8 @@ const TaskBoard: React.FC = () => {
       e?.preventDefault();
       if (!newTask.title) return;
 
+      setLoadingTask(true);
+
       const iso =
         newTask.dueDate && newTask.dueTime
           ? `${newTask.dueDate}T${newTask.dueTime}`
@@ -137,7 +138,7 @@ const TaskBoard: React.FC = () => {
         .map((t) => t.trim())
         .filter(Boolean);
 
-      console.log('New Task details: ', newTask);
+     
 
 
       try {
@@ -154,6 +155,8 @@ const TaskBoard: React.FC = () => {
       } catch (err) {
         console.error(err);
         alert("Failed to create task");
+      } finally {
+        setLoadingTask(false);
       }
     },
     [newTask, setTasks]
@@ -303,7 +306,7 @@ const TaskBoard: React.FC = () => {
 
       {/* MODAL */}
       {showModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md">
+        <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/90 backdrop-blur-md">
           <div className="bg-[#0d0d0d] border border-cyan-500/50 p-10 w-full max-w-lg relative shadow-[0_0_50px_rgba(6,182,212,0.2)] clip-corner-all">
             <button
               onClick={() => setShowModal(false)}
@@ -358,7 +361,7 @@ const TaskBoard: React.FC = () => {
                   </label>
                   <input
                     type="date"
-                    className="w-full bg-black border border-neutral-800 p-4 text-white text-sm outline-none focus:border-cyan-500 transition-colors [color-scheme:dark] cursor-pointer"
+                    className="w-full bg-black border border-neutral-800 p-4 text-white text-sm outline-none focus:border-cyan-500 transition-colors scheme-dark cursor-pointer"
                     value={newTask.dueDate}
                     onChange={(e) =>
                       setNewTask((p) => ({ ...p, dueDate: e.target.value }))
@@ -372,7 +375,7 @@ const TaskBoard: React.FC = () => {
                   </label>
                   <input
                     type="time"
-                    className="w-full bg-black border border-neutral-800 p-4 text-white text-sm outline-none focus:border-cyan-500 transition-colors [color-scheme:dark] cursor-pointer"
+                    className="w-full bg-black border border-neutral-800 p-4 text-white text-sm outline-none focus:border-cyan-500 transition-colors scheme-dark cursor-pointer"
                     value={newTask.dueTime}
                     onChange={(e) =>
                       setNewTask((p) => ({ ...p, dueTime: e.target.value }))
@@ -400,10 +403,10 @@ const TaskBoard: React.FC = () => {
               {/* SUBMIT */}
               <button
                 onClick={handleManualSubmit}
-                disabled={!newTask.title}
+                disabled={!newTask.title || loadingTask}
                 className="w-full mt-8 bg-cyan-900/20 border border-cyan-500/50 text-cyan-400 py-5 font-bold text-sm hover:bg-cyan-500 hover:text-black transition-all uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                CONFIRM
+                {loadingTask ? "Saving..." : "CONFIRM"}
               </button>
             </div>
           </div>

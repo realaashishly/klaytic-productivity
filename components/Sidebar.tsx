@@ -4,9 +4,14 @@ import React from 'react';
 import { LayoutDashboard, ListTodo, Box, Link2, UserCircle2, GraduationCap, Globe2, CreditCard } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useUser } from '@/hooks/useUser';
 
 const Sidebar: React.FC = () => {
   const pathname = usePathname();
+
+  const { user, isLoading, isAuthenticated } = useUser();
+
+  console.log("User data Sidebar:", user?.id);
 
   const isActive = (path: string) => pathname === path
     ? "text-cyan-400 bg-cyan-950/30 border-r-2 border-cyan-500"
@@ -43,23 +48,23 @@ const Sidebar: React.FC = () => {
       </div>
 
       <nav className="flex-1 flex flex-col w-full">
-        <NavItem to="/" icon={LayoutDashboard} label="Dashboard" />
-        <NavItem to="/tasks" icon={ListTodo} label="Tasks" />
+        <NavItem to={`/${user?.id}/dashboard`} icon={LayoutDashboard} label="Dashboard" />
+        <NavItem to={`/${user?.id}/tasks`} icon={ListTodo} label="Tasks" />
 
-        <div className="h-[1px] bg-gradient-to-r from-transparent via-neutral-800 to-transparent mx-auto my-4 w-10"></div>
+        <div className="h-px bg-linear-to-r from-transparent via-neutral-800 to-transparent mx-auto my-4 w-10"></div>
 
-        <NavItem to="/career" icon={GraduationCap} label="Career" />
-        <NavItem to="/globe" icon={Globe2} label="WORLD" />
+        <NavItem to={`/${user?.id}/career`} icon={GraduationCap} label="Career" />
+        <NavItem to={`/${user?.id}/globe`} icon={Globe2} label="WORLD" />
 
-        <div className="h-[1px] bg-gradient-to-r from-transparent via-neutral-800 to-transparent mx-auto my-4 w-10"></div>
+        <div className="h-px bg-linear-to-r from-transparent via-neutral-800 to-transparent mx-auto my-4 w-10"></div>
 
-        <NavItem to="/assets" icon={Box} label="Files" />
-        <NavItem to="/links" icon={Link2} label="Links" />
+        <NavItem to={`/${user?.id}/assets`} icon={Box} label="Files" />
+        <NavItem to={`/${user?.id}/links`} icon={Link2} label="Links" />
       </nav>
 
       <div className="mt-auto flex flex-col w-full pt-6 border-t border-white/5">
-        <NavItem to="/pricing" icon={CreditCard} label="Upgrade" />
-        <NavItem to="/profile" icon={UserCircle2} label="Profile" />
+        <NavItem to={`/${user?.id}/pricing`} icon={CreditCard} label="Upgrade" />
+        <NavItem to={`/${user?.id}/profile`} icon={UserCircle2} label="Profile" />
       </div>
     </div>
   );

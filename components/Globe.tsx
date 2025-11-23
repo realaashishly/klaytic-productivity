@@ -8,6 +8,8 @@ import {
 import { searchGlobalIntelligence, generateVisualization, chatWithGlobalIntel } from '../services/geminiService';
 import { GlobalAnalysisResult, GlobalWidget, GlobalChatMessage } from '../types';
 import Link from 'next/link';
+import { useUser } from '@/hooks/useUser';
+import { decrementUserCredits } from '@/actions/userActions';
 
 // --- Detailed Geometric World Map Data ---
 const WORLD_REGIONS = [
@@ -80,29 +82,25 @@ const Globe: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'data' | 'chat'>('data');
 
     // Credit System
+    const { user, isLoading, error } = useUser();
     const [credits, setCredits] = useState(50);
 
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const saved = localStorage.getItem('nexus_credits');
-            const savedDate = localStorage.getItem('nexus_credits_date');
-            const now = new Date();
-            const currentMonth = `${now.getFullYear()}-${now.getMonth()}`;
-
-            // Reset credits if new month or no record
-            if (!savedDate || savedDate !== currentMonth) {
-                localStorage.setItem('nexus_credits_date', currentMonth);
-                localStorage.setItem('nexus_credits', '50');
-                setCredits(50);
-            } else {
-                setCredits(saved ? parseInt(saved) : 50);
-            }
+        if (user?.credits !== undefined) {
+            setCredits(user.credits);
         }
-    }, []);
+    }, [user]);
 
-    useEffect(() => {
-        localStorage.setItem('nexus_credits', credits.toString());
-    }, [credits]);
+    const handleUpdateCredits = async () => {
+        try {
+            const updatedCredits = await decrementUserCredits();
+            setCredits(updatedCredits);
+        } catch (error) {
+            console.error("Error updating credits:", error);
+        }
+    };
+
+
 
     // Intel State
     const [globalAnalysis, setGlobalAnalysis] = useState<GlobalAnalysisResult | null>(null);
@@ -122,6 +120,48 @@ const Globe: React.FC = () => {
         }
     }, [chatHistory, activeTab]);
 
+    // Persistence Logic
+    const [isLoaded, setIsLoaded] = useState(false);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const savedQuery = localStorage.getItem('nexus_globe_query');
+            const savedAnalysis = localStorage.getItem('nexus_globe_analysis');
+            const savedImage = localStorage.getItem('nexus_globe_image');
+            const savedChat = localStorage.getItem('nexus_globe_chat');
+
+            if (savedQuery) setSearchQuery(savedQuery);
+            if (savedAnalysis) {
+                try {
+                    setGlobalAnalysis(JSON.parse(savedAnalysis));
+                } catch (e) { console.error(e); }
+            }
+            if (savedImage) setContextImage(savedImage);
+            if (savedChat) {
+                try {
+                    setChatHistory(JSON.parse(savedChat));
+                } catch (e) { console.error(e); }
+            }
+            setIsLoaded(true);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (!isLoaded) return;
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('nexus_globe_query', searchQuery);
+
+            if (globalAnalysis) localStorage.setItem('nexus_globe_analysis', JSON.stringify(globalAnalysis));
+            else localStorage.removeItem('nexus_globe_analysis');
+
+            if (contextImage) localStorage.setItem('nexus_globe_image', contextImage);
+            else localStorage.removeItem('nexus_globe_image');
+
+            if (chatHistory.length > 0) localStorage.setItem('nexus_globe_chat', JSON.stringify(chatHistory));
+            else localStorage.removeItem('nexus_globe_chat');
+        }
+    }, [searchQuery, globalAnalysis, contextImage, chatHistory, isLoaded]);
+
     const performGlobalSearch = async (query: string) => {
         if (!query) return;
 
@@ -130,7 +170,6 @@ const Globe: React.FC = () => {
             return;
         }
 
-        setCredits(prev => prev - 1);
         setSuggestions([]);
         setIsAnalyzing(true);
         setGlobalAnalysis(null);
@@ -151,6 +190,8 @@ const Globe: React.FC = () => {
             ]);
             setGlobalAnalysis(analysis);
             setContextImage(imageUrl);
+
+            handleUpdateCredits();
         } catch (e) {
             console.error(e);
         } finally {
@@ -251,7 +292,7 @@ const Globe: React.FC = () => {
                 )}
 
                 {widget.type === 'insight' && (
-                    <div className="relative overflow-hidden rounded-xl p-4 bg-gradient-to-br from-purple-900/20 to-blue-900/20 border border-white/5">
+                    <div className="relative overflow-hidden rounded-xl p-4 bg-linear-to-br from-purple-900/20 to-blue-900/20 border border-white/5">
                         <Sparkles size={16} className="text-yellow-400 mb-2" />
                         <p className="text-sm font-medium text-white italic leading-relaxed">"{widget.content.text}"</p>
                     </div>
@@ -263,7 +304,7 @@ const Globe: React.FC = () => {
     return (
         <div className="p-8 md:p-12 max-w-[1800px] mx-auto w-full h-screen flex flex-col overflow-hidden relative">
             {/* Gradient Header Background */}
-            <div className="absolute top-0 left-0 w-full h-80 bg-gradient-to-b from-cyan-900/20 to-transparent pointer-events-none z-0"></div>
+            <div className="absolute top-0 left-0 w-full h-80 bg-linear-to-b from-cyan-900/20 to-transparent pointer-events-none z-0"></div>
 
             <header className="mb-8 relative z-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-6 shrink-0">
                 <div>
@@ -312,7 +353,7 @@ const Globe: React.FC = () => {
 
                 {/* Left: Interactive Geometric Map */}
                 <div className="flex-1 relative bg-neutral-900/50 backdrop-blur-md rounded-3xl border border-neutral-900 overflow-hidden flex flex-col justify-center group shrink-0 lg:shrink select-none">
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-neutral-900/20 to-[#050505]"></div>
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops))] from-neutral-900/20 to-[#050505]"></div>
 
                     <svg viewBox="0 0 900 550" className="w-full h-full max-w-6xl drop-shadow-[0_0_50px_rgba(0,0,0,0.5)] z-10 p-4">
                         <defs>
@@ -446,7 +487,7 @@ const Globe: React.FC = () => {
                                         {contextImage && (
                                             <div className="w-full h-40 rounded-2xl overflow-hidden mb-6 relative group border border-neutral-800">
                                                 <img src={contextImage} alt="Intel Context" className="w-full h-full object-cover" />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-4">
+                                                <div className="absolute inset-0 bg-linear-to-t from-black/80 to-transparent flex items-end p-4">
                                                     <span className="text-[10px] font-bold text-white bg-purple-500/80 px-2 py-1 rounded backdrop-blur-sm uppercase tracking-wider">Visual</span>
                                                 </div>
                                             </div>
